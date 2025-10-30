@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/rjlee/actual-tx-linker/compare/v1.1.0...v1.1.1) (2025-10-30)
+
+
+### Bug Fixes
+
+* Correct Docker image references in workflows and docker-compose.yml ([7061fad](https://github.com/rjlee/actual-tx-linker/commit/7061fad2bbb115ead68134a4579d36791ef1373a))
+
 # [1.1.0](https://github.com/rjlee/actual-tx-linker/compare/v1.0.0...v1.1.0) (2025-10-30)
 
 

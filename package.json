@@ -1,6 +1,6 @@
 {
   "name": "actual-tx-linker",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "type": "commonjs",
   "description": "Link matching inter-account transactions in Actual into proper transfers, and dedupe duplicates.",
