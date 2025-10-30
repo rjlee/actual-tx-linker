@@ -21,16 +21,12 @@ jobs:
 
       - name: Install dependencies
         run: npm install --prefer-offline --no-audit --no-fund
-        working-directory: ./actual-tx-linker
 
       - name: Lint code
         run: npm run lint
-        working-directory: ./actual-tx-linker
 
       - name: Check formatting
         run: npm run format:check
-        working-directory: ./actual-tx-linker
 
       - name: Run tests
         run: npm test
-        working-directory: ./actual-tx-linker

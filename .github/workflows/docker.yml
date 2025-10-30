@@ -48,10 +48,9 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: ./actual-tx-linker
+          context: .
           push: true
           tags: |
             ghcr.io/${{ github.repository }}-actual-tx-linker:${{ steps.get_version.outputs.VERSION }}
             ghcr.io/${{ github.repository }}-actual-tx-linker:latest
           labels: ${{ steps.meta.outputs.labels }}
-

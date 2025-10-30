@@ -28,24 +28,18 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-        working-directory: ./actual-tx-linker
 
       - name: Lint code
         run: npm run lint
-        working-directory: ./actual-tx-linker
 
       - name: Check formatting
         run: npm run format:check
-        working-directory: ./actual-tx-linker
 
       - name: Run tests
         run: npm test
-        working-directory: ./actual-tx-linker
 
       - name: Run semantic-release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
-        working-directory: ./actual-tx-linker
-
