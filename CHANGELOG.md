@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/rjlee/actual-tx-linker/compare/v1.0.0...v1.1.0) (2025-10-30)
+
+
+### Bug Fixes
+
+* Update .prettierignore to include CHANGELOG.md and format adjustments in docker-compose.yml ([cc9c085](https://github.com/rjlee/actual-tx-linker/commit/cc9c0856381ea693416f38a41a6605e93198290d))
+
+
+### Features
+
+* Add initial docker-compose.yml for service configuration ([0294328](https://github.com/rjlee/actual-tx-linker/commit/02943283ccac9efeb33c7532e06f22423705bb07))
+
 # 1.0.0 (2025-10-30)
 
 ### Bug Fixes
