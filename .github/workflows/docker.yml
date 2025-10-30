@@ -37,7 +37,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}-actual-tx-linker
+          images: ghcr.io/${{ github.repository }}
 
       - name: Get release version from git tag
         id: get_version
@@ -51,6 +51,6 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}-actual-tx-linker:${{ steps.get_version.outputs.VERSION }}
-            ghcr.io/${{ github.repository }}-actual-tx-linker:latest
+            ghcr.io/${{ github.repository }}:${{ steps.get_version.outputs.VERSION }}
+            ghcr.io/${{ github.repository }}:latest
           labels: ${{ steps.meta.outputs.labels }}
