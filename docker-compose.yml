@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  tx-linker:
+    # Use the published GHCR image by default; comment out 'image' and uncomment 'build' to rebuild locally
+    image: ghcr.io/rjlee/actual-tx-linker-actual-tx-linker:latest
+    # build: .
+    container_name: actual-tx-linker
+    env_file:
+      - .env
+    restart: unless-stopped
+    command: ["--mode", "daemon"]
+    volumes:
+      - type: bind
+        source: ./data
+        target: /app/data
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+
