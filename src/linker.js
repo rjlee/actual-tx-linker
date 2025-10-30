@@ -338,7 +338,8 @@ async function linkOnce({
       logger.info(
         `Linking ${srcAcct?.name || m.out.account} -> ${dstAcct?.name || m.inc.account} | ` +
           `amount=${formatAmount(Math.abs(m.out.amount))} (raw=${Math.abs(m.out.amount)}) score=${m.score.toFixed(2)} ` +
-          `dates=${m.out.date} & ${m.inc.date}` + (m.sameDay ? ' (same-day)' : ''),
+          `dates=${m.out.date} & ${m.inc.date}` +
+          (m.sameDay ? ' (same-day)' : ''),
       );
       try {
         const transferPayeeId = await ensureTransferPayeeId(m.inc.account);

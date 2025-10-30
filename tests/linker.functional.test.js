@@ -88,22 +88,43 @@ describe('linkOnce basic flow', () => {
     api.getTransactions.mockImplementation((acctId) => {
       if (acctId === 'A') {
         return Promise.resolve([
-          { id: 'o1', account: 'A', amount: -1000, date: '2025-10-10', cleared: true, reconciled: false },
+          {
+            id: 'o1',
+            account: 'A',
+            amount: -1000,
+            date: '2025-10-10',
+            cleared: true,
+            reconciled: false,
+          },
         ]);
       }
       if (acctId === 'B') {
         return Promise.resolve([
-          { id: 'i1', account: 'B', amount: 1000, date: '2025-10-10', cleared: true, reconciled: false },
+          {
+            id: 'i1',
+            account: 'B',
+            amount: 1000,
+            date: '2025-10-10',
+            cleared: true,
+            reconciled: false,
+          },
         ]);
       }
       return Promise.resolve([]);
     });
     api.getPayees.mockResolvedValue([]);
     api.createPayee.mockResolvedValue({ id: 'pB' });
-    const linked = await linkOnce({ dryRun: false, minScore: 0, keep: 'incoming' });
+    const linked = await linkOnce({
+      dryRun: false,
+      minScore: 0,
+      keep: 'incoming',
+    });
     expect(linked).toBe(1);
     // Should update incoming txn id instead of outgoing
-    expect(api.updateTransaction).toHaveBeenCalledWith('i1', expect.any(Object));
+    expect(api.updateTransaction).toHaveBeenCalledWith(
+      'i1',
+      expect.any(Object),
+    );
   });
 
   test('delete retry on first failure', async () => {
@@ -114,12 +135,26 @@ describe('linkOnce basic flow', () => {
     api.getTransactions.mockImplementation((acctId) => {
       if (acctId === 'A') {
         return Promise.resolve([
-          { id: 'o1', account: 'A', amount: -1000, date: '2025-10-10', cleared: true, reconciled: false },
+          {
+            id: 'o1',
+            account: 'A',
+            amount: -1000,
+            date: '2025-10-10',
+            cleared: true,
+            reconciled: false,
+          },
         ]);
       }
       if (acctId === 'B') {
         return Promise.resolve([
-          { id: 'i1', account: 'B', amount: 1000, date: '2025-10-10', cleared: true, reconciled: false },
+          {
+            id: 'i1',
+            account: 'B',
+            amount: 1000,
+            date: '2025-10-10',
+            cleared: true,
+            reconciled: false,
+          },
         ]);
       }
       return Promise.resolve([]);
@@ -309,17 +344,35 @@ describe('linkOnce basic flow', () => {
     api.getTransactions.mockImplementation((acctId) => {
       if (acctId === 'A') {
         return Promise.resolve([
-          { id: 'o1', account: 'A', amount: -1000, date: '2025-10-10', cleared: true, reconciled: true },
+          {
+            id: 'o1',
+            account: 'A',
+            amount: -1000,
+            date: '2025-10-10',
+            cleared: true,
+            reconciled: true,
+          },
         ]);
       }
       if (acctId === 'B') {
         return Promise.resolve([
-          { id: 'i1', account: 'B', amount: 1000, date: '2025-10-10', cleared: true, reconciled: false },
+          {
+            id: 'i1',
+            account: 'B',
+            amount: 1000,
+            date: '2025-10-10',
+            cleared: true,
+            reconciled: false,
+          },
         ]);
       }
       return Promise.resolve([]);
     });
-    const linked = await linkOnce({ dryRun: false, minScore: 0, skipReconciled: true });
+    const linked = await linkOnce({
+      dryRun: false,
+      minScore: 0,
+      skipReconciled: true,
+    });
     expect(linked).toBe(0);
   });
 });
