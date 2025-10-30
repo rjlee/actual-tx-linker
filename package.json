@@ -1,0 +1,57 @@
+{
+  "name": "actual-tx-linker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Link matching inter-account transactions in Actual into proper transfers, and dedupe duplicates.",
+  "bin": {
+    "actual-tx-linker": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node ./src/index.js",
+    "link-once": "node ./src/index.js --mode link-once",
+    "daemon": "node ./src/index.js --mode daemon",
+    "test": "LOG_LEVEL=silent jest --passWithNoTests",
+    "prepare": "husky install || true",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@actual-app/api": "^25.0.0",
+    "dotenv": "^16.4.5",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "husky": "^8.0.0",
+    "jest": "^29.7.0",
+    "lint-staged": "^16.0.0",
+    "prettier": "^3.3.3",
+    "semantic-release": "^21.0.0",
+    "@semantic-release/changelog": "^6.0.0",
+    "@semantic-release/commit-analyzer": "^10.0.0",
+    "@semantic-release/github": "^9.0.0",
+    "@semantic-release/npm": "^9.0.0",
+    "@semantic-release/release-notes-generator": "^10.0.0",
+    "@semantic-release/git": "^10.0.0"
+  },
+  "release": {
+    "extends": "./release.config.js"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "npm run lint && npm test"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.md": [
+      "prettier --write"
+    ]
+  }
+}
