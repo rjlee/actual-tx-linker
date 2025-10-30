@@ -3,6 +3,8 @@ name: Docker Build & Publish
 on:
   push:
     branches: [release]
+    paths:
+      - 'actual-tx-linker/**'
   workflow_run:
     workflows: ['CI & Release']
     types: [completed]
