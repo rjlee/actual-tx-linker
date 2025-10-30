@@ -62,3 +62,4 @@ Notes
 - Actual auto-creates the mirrored transfer on update.
 - The tool logs skip reasons (ambiguous, below-score, out-of-window) and prints a concise summary at the end.
 - Amounts in logs show both human-readable units and raw milliunits for clarity.
+
