@@ -1,4 +1,4 @@
-Actual Transaction Linker
+# Actual Transaction Linker
 
 Links matching inter-account transactions (e.g., Monzo → Starling) in Actual into proper transfers and removes duplicates created by bank importers (e.g., GoCardless).
 
