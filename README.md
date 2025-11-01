@@ -24,6 +24,7 @@ Provide env vars (via shell or `.env` file at project root):
 - `BUDGET_DIR` (optional): Local data dir for Actual cache, default `./data/budget`
 - `INCLUDE_ACCOUNTS` (optional): Comma-separated list of exact account names or ids to include
 - `EXCLUDE_ACCOUNTS` (optional): Comma-separated list of exact account names or ids to exclude
+- `DRY_RUN` (optional): `true` (default) logs actions only; set to `false` to apply links without passing the CLI flag
 
 CLI
 
@@ -52,6 +53,7 @@ Common flags
 - `--window-hours` (default 72): max time difference between paired txns
 - `--min-score` (default 0.2): minimum text-similarity score to accept
 - `--dry-run` (boolean, default true): print actions without changing data
+  - You can also control this via `DRY_RUN` env; CLI flag overrides the env default.
 - `--include-accounts` (array): only scan accounts listed (name or id), can be repeated or comma-separated
 - `--exclude-accounts` (array): skip accounts listed (name or id), can be repeated or comma-separated
   - If not provided, `INCLUDE_ACCOUNTS`/`EXCLUDE_ACCOUNTS` from the environment are used.

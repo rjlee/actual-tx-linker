@@ -196,8 +196,12 @@ async function main() {
     })
     .option('dry-run', {
       type: 'boolean',
-      default: true,
-      describe: 'Only log planned actions without modifying data',
+      default:
+        process.env.DRY_RUN !== undefined
+          ? !/^(false|0|no)$/i.test(process.env.DRY_RUN)
+          : true,
+      describe:
+        'Only log planned actions without modifying data (can also set DRY_RUN env)',
     })
     .option('verbose', {
       alias: 'v',
