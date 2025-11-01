@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/rjlee/actual-tx-linker/compare/v1.3.1...v1.4.0) (2025-11-01)
+
+
+### Features
+
+* Add repair mode to fix self-transfers and clear categories in transactions ([e88bac5](https://github.com/rjlee/actual-tx-linker/commit/e88bac5d30de88569457495d84d5d5998e47b6ce))
+
 ## [1.3.1](https://github.com/rjlee/actual-tx-linker/compare/v1.3.0...v1.3.1) (2025-11-01)
 
 
