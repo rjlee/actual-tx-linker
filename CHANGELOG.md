@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/rjlee/actual-tx-linker/compare/v1.2.0...v1.3.0) (2025-11-01)
+
+
+### Features
+
+* Add DRY_RUN environment variable support for controlling dry-run behavior ([2b1044c](https://github.com/rjlee/actual-tx-linker/commit/2b1044c72a9d345f9b9dfd7141d1515865059903))
+
 # [1.2.0](https://github.com/rjlee/actual-tx-linker/compare/v1.1.1...v1.2.0) (2025-11-01)
 
 
