@@ -312,7 +312,7 @@ async function linkOnce({
   if (pairMultiples && ambiguousGroups.size > 0) {
     // Build id -> txn map
     const byId = new Map(all.map((t) => [t.id, t]));
-    for (const [key, group] of ambiguousGroups.entries()) {
+    for (const group of ambiguousGroups.values()) {
       const outs = group.outs.slice().sort((a, b) => a.id.localeCompare(b.id));
       const incs = Array.from(group.incIds)
         .map((id) => byId.get(id))
