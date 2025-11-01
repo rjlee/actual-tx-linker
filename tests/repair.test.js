@@ -63,8 +63,14 @@ describe('repairOnce', () => {
 
     const repaired = await repairOnce({ minScore: 0, clearedOnly: true });
     expect(repaired).toBe(1);
-    expect(api.createPayee).toHaveBeenCalledWith({ name: '', transfer_acct: 'B' });
-    expect(api.updateTransaction).toHaveBeenCalledWith('o-bad', { payee: 'pB', category: null });
+    expect(api.createPayee).toHaveBeenCalledWith({
+      name: '',
+      transfer_acct: 'B',
+    });
+    expect(api.updateTransaction).toHaveBeenCalledWith('o-bad', {
+      payee: 'pB',
+      category: null,
+    });
     expect(api.deleteTransaction).toHaveBeenCalledWith('i-dupe');
   });
 
@@ -73,7 +79,9 @@ describe('repairOnce', () => {
       { id: 'A', name: 'Acct A' },
       { id: 'B', name: 'Acct B' },
     ]);
-    api.getPayees.mockResolvedValue([{ id: 'pA', name: '', transfer_acct: 'A' }]);
+    api.getPayees.mockResolvedValue([
+      { id: 'pA', name: '', transfer_acct: 'A' },
+    ]);
     api.getTransactions.mockImplementation((acctId) => {
       if (acctId === 'A') {
         return Promise.resolve([
@@ -90,12 +98,23 @@ describe('repairOnce', () => {
       }
       if (acctId === 'B') {
         return Promise.resolve([
-          { id: 'i-dupe', account: 'B', amount: 2500, date: '2025-10-10', cleared: true, reconciled: false },
+          {
+            id: 'i-dupe',
+            account: 'B',
+            amount: 2500,
+            date: '2025-10-10',
+            cleared: true,
+            reconciled: false,
+          },
         ]);
       }
       return Promise.resolve([]);
     });
-    const repaired = await repairOnce({ minScore: 0, clearedOnly: true, dryRun: true });
+    const repaired = await repairOnce({
+      minScore: 0,
+      clearedOnly: true,
+      dryRun: true,
+    });
     expect(repaired).toBe(0);
     expect(api.createPayee).not.toHaveBeenCalled();
     expect(api.updateTransaction).not.toHaveBeenCalled();
@@ -107,7 +126,9 @@ describe('repairOnce', () => {
       { id: 'A', name: 'Acct A' },
       { id: 'B', name: 'Acct B' },
     ]);
-    api.getPayees.mockResolvedValue([{ id: 'pB', name: '', transfer_acct: 'B' }]);
+    api.getPayees.mockResolvedValue([
+      { id: 'pB', name: '', transfer_acct: 'B' },
+    ]);
     api.getTransactions.mockImplementation((acctId) => {
       if (acctId === 'A') {
         return Promise.resolve([
@@ -125,8 +146,14 @@ describe('repairOnce', () => {
       }
       return Promise.resolve([]);
     });
-    const repaired = await repairOnce({ minScore: 0, clearedOnly: true, dryRun: false });
+    const repaired = await repairOnce({
+      minScore: 0,
+      clearedOnly: true,
+      dryRun: false,
+    });
     expect(repaired).toBe(1);
-    expect(api.updateTransaction).toHaveBeenCalledWith('t1', { category: null });
+    expect(api.updateTransaction).toHaveBeenCalledWith('t1', {
+      category: null,
+    });
   });
 });

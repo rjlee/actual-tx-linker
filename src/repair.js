@@ -19,7 +19,12 @@ function tokens(s) {
 }
 
 function textFor(tx) {
-  const parts = [tx.description, tx.imported_description, tx.imported_payee, tx.notes]
+  const parts = [
+    tx.description,
+    tx.imported_description,
+    tx.imported_payee,
+    tx.notes,
+  ]
     .map((x) => x || '')
     .filter(Boolean);
   return normalizeText(parts.join(' '));
@@ -100,7 +105,12 @@ function keyByAmount(txns) {
   return map;
 }
 
-function chooseKeepAndDrop(outTx, inTx, keep = 'outgoing', preferReconciled = true) {
+function chooseKeepAndDrop(
+  outTx,
+  inTx,
+  keep = 'outgoing',
+  preferReconciled = true,
+) {
   if (preferReconciled) {
     const outRec = !!outTx.reconciled;
     const inRec = !!inTx.reconciled;
@@ -146,7 +156,10 @@ async function repairOnce({
       const txns = await api.getTransactions(acct.id, startYMD, endYMD);
       for (const t of txns) all.push(t);
     } catch (err) {
-      logger.warn(`Repair: tx fetch failed for ${acct.name}`, err?.message || err);
+      logger.warn(
+        `Repair: tx fetch failed for ${acct.name}`,
+        err?.message || err,
+      );
     }
   }
 
@@ -186,7 +199,10 @@ async function repairOnce({
       break;
     }
     const amountAbs = Math.abs(bad.amount);
-    const sameAmt = bad.amount < 0 ? posByAmt.get(amountAbs) || [] : negByAmt.get(amountAbs) || [];
+    const sameAmt =
+      bad.amount < 0
+        ? posByAmt.get(amountAbs) || []
+        : negByAmt.get(amountAbs) || [];
     const cands = sameAmt.filter(
       (cand) =>
         cand.account !== bad.account &&
@@ -215,8 +231,14 @@ async function repairOnce({
 
     const outTx = bad.amount < 0 ? bad : best.c;
     const inTx = bad.amount > 0 ? bad : best.c;
-    const { keep: keepTx, drop } = chooseKeepAndDrop(outTx, inTx, keep, preferReconciled);
-    const destAccountId = keepTx.account === outTx.account ? inTx.account : outTx.account;
+    const { keep: keepTx, drop } = chooseKeepAndDrop(
+      outTx,
+      inTx,
+      keep,
+      preferReconciled,
+    );
+    const destAccountId =
+      keepTx.account === outTx.account ? inTx.account : outTx.account;
 
     const srcAcct = accountsById[keepTx.account]?.name || keepTx.account;
     const dstAcct = accountsById[destAccountId]?.name || destAccountId;
@@ -247,7 +269,10 @@ async function repairOnce({
             try {
               await api.deleteTransaction(drop.id);
             } catch (e) {
-              logger.warn('Repair: delete failed for drop txn', e?.message || e);
+              logger.warn(
+                'Repair: delete failed for drop txn',
+                e?.message || e,
+              );
             }
           }
         }
@@ -275,9 +300,7 @@ async function repairOnce({
     );
     try {
       if (dryRun) {
-        logger.info(
-          `DRY RUN: would clear category on txn ${tx.id}`,
-        );
+        logger.info(`DRY RUN: would clear category on txn ${tx.id}`);
       } else {
         await api.updateTransaction(tx.id, { category: null });
         usedIds.add(tx.id);
