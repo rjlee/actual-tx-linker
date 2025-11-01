@@ -182,19 +182,29 @@ async function main() {
       default: cfg.INTERVAL_MINS,
       describe: 'Daemon interval in minutes',
     })
+    .option('skip-reconciled', {
+      type: 'boolean',
+      default: cfg.SKIP_RECONCILED,
+      describe: 'Skip reconciled transactions entirely',
+    })
+    .option('prefer-reconciled', {
+      type: 'boolean',
+      default: cfg.PREFER_RECONCILED,
+      describe: 'When not skipping reconciled, keep the reconciled side',
+    })
     .option('max-links-per-run', {
       type: 'number',
-      default: 50,
+      default: cfg.MAX_LINKS_PER_RUN,
       describe: 'Cap the number of links applied per run',
     })
     .option('cleared-only', {
       type: 'boolean',
-      default: true,
+      default: cfg.CLEARED_ONLY,
       describe: 'Only consider cleared transactions for matching',
     })
     .option('keep', {
       choices: ['outgoing', 'incoming'],
-      default: 'outgoing',
+      default: cfg.KEEP,
       describe: 'Which side to keep when linking a pair',
     })
     .option('include-accounts', {
@@ -211,18 +221,18 @@ async function main() {
     })
     .option('delete-duplicate', {
       type: 'boolean',
-      default: true,
+      default: cfg.DELETE_DUPLICATE,
       describe: 'Delete the original duplicate after linking',
     })
     .option('pair-multiples', {
       type: 'boolean',
-      default: true,
+      default: cfg.PAIR_MULTIPLES,
       describe:
         'Deterministically pair same-day, same-amount multiples instead of skipping as ambiguous',
     })
     .option('merge-notes', {
       type: 'boolean',
-      default: true,
+      default: cfg.MERGE_NOTES,
       describe:
         'Merge a short note from the matched counterpart into the kept transaction',
     })

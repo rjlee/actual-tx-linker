@@ -25,6 +25,15 @@ Provide env vars (via shell or `.env` file at project root):
 - `INCLUDE_ACCOUNTS` (optional): Comma-separated list of exact account names or ids to include
 - `EXCLUDE_ACCOUNTS` (optional): Comma-separated list of exact account names or ids to exclude
 - `DRY_RUN` (optional): `true` (default) logs actions only; set to `false` to apply links without passing the CLI flag
+- `LOOKBACK_DAYS` / `WINDOW_HOURS` / `MIN_SCORE` / `INTERVAL_MINS` (optional): default scan/timing values used unless overridden by CLI
+- `MAX_LINKS_PER_RUN` (optional, default 50): cap changes per run
+- `PAIR_MULTIPLES` (optional, default `true`): deterministically pair same‑day, same‑amount multiples
+- `DELETE_DUPLICATE` (optional, default `true`): delete the duplicate counterpart after linking
+- `MERGE_NOTES` (optional, default `true`): append concise match info to kept txn notes
+- `KEEP` (optional, `outgoing`|`incoming`, default `outgoing`): which side to keep
+- `CLEARED_ONLY` (optional, default `true`): only consider cleared transactions
+- `SKIP_RECONCILED` (optional, default `true`): skip reconciled transactions entirely
+- `PREFER_RECONCILED` (optional, default `true`): when not skipping reconciled, keep the reconciled side
 
 CLI
 
@@ -67,6 +76,10 @@ Common flags
 - `--max-links-per-run` (number, default 50): cap changes per run for safety
 - `--pair-multiples` (boolean, default true): when multiple same-day, same-amount candidates exist on both sides, pair deterministically by id instead of skipping as ambiguous
 - `--verbose` (boolean): more logs
+
+Env vs CLI precedence
+
+- All of the above env vars act as defaults. Any CLI flag explicitly provided overrides the corresponding env var for that run.
 
 Repair specifics
 
