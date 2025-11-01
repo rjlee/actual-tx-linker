@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/rjlee/actual-tx-linker/compare/v1.5.0...v1.6.0) (2025-11-01)
+
+
+### Features
+
+* Add new environment variables and CLI options for transaction linking behavior ([6c43609](https://github.com/rjlee/actual-tx-linker/commit/6c43609bc1e30bcb4b6d891a54058b90a5c1e6bd))
+
 # [1.5.0](https://github.com/rjlee/actual-tx-linker/compare/v1.4.0...v1.5.0) (2025-11-01)
 
 
