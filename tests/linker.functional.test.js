@@ -113,7 +113,13 @@ describe('linkOnce basic flow', () => {
       return Promise.resolve([]);
     });
     api.getPayees.mockResolvedValue([]);
-    api.createPayee.mockResolvedValue({ id: 'pB' });
+    // When keeping incoming, transfer payee should target the OUTGOING account (A)
+    api.createPayee.mockImplementation(async ({ transfer_acct }) => {
+      if (transfer_acct !== 'A') {
+        throw new Error('created payee for wrong account');
+      }
+      return { id: 'pA' };
+    });
     const linked = await linkOnce({
       dryRun: false,
       minScore: 0,
@@ -123,7 +129,7 @@ describe('linkOnce basic flow', () => {
     // Should update incoming txn id instead of outgoing
     expect(api.updateTransaction).toHaveBeenCalledWith(
       'i1',
-      expect.any(Object),
+      expect.objectContaining({ payee: 'pA' }),
     );
   });
 

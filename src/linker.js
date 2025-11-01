@@ -342,13 +342,16 @@ async function linkOnce({
           (m.sameDay ? ' (same-day)' : ''),
       );
       try {
-        const transferPayeeId = await ensureTransferPayeeId(m.inc.account);
         const { keep: keepTx, drop } = chooseKeepAndDrop(
           m.out,
           m.inc,
           keep,
           preferReconciled,
         );
+        // Choose destination account as the opposite side of the kept txn
+        const destAccountId =
+          keepTx.account === m.out.account ? m.inc.account : m.out.account;
+        const transferPayeeId = await ensureTransferPayeeId(destAccountId);
         const fields = { payee: transferPayeeId };
         if (mergeNotes) {
           const merged = buildMergedNotes(
