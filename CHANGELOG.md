@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/rjlee/actual-tx-linker/compare/v1.3.0...v1.3.1) (2025-11-01)
+
+
+### Bug Fixes
+
+* Correct transfer payee ID assignment to target the appropriate account in linkOnce function ([4445df9](https://github.com/rjlee/actual-tx-linker/commit/4445df95417052ff98c2051a5133e69303f3df9e))
+
 # [1.3.0](https://github.com/rjlee/actual-tx-linker/compare/v1.2.0...v1.3.0) (2025-11-01)
 
 
