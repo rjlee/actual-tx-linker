@@ -31,6 +31,21 @@ CLI
 - Daemon every N minutes: `node src/index.js --mode daemon --interval-mins 5`
   - Stop the daemon with Ctrl+C; it shuts down gracefully and closes the budget.
 
+### Optional: Event-based triggers (actual-events)
+
+You can optionally listen to events from the `actual-events` sidecar to trigger near-real-time linking when new transactions arrive. This runs alongside the daemon interval (interval remains a fallback) and debounces bursts of events to avoid redundant runs.
+
+Enable via environment variables:
+
+```
+ENABLE_EVENTS=true
+EVENTS_URL=http://localhost:4000/events
+# Optional if actual-events enforces auth
+EVENTS_AUTH_TOKEN=your-token
+```
+
+By default, the listener subscribes to `transaction.created` and `transaction.updated` and schedules a link run shortly after changes are detected. You can include your own query params in `EVENTS_URL` to narrow by entities, events, or accounts; otherwise defaults are applied.
+
 Common flags
 
 - `--lookback-days` (default 14): how far back to scan

@@ -7,6 +7,10 @@ const logger = require('./logger');
 const cfg = require('./config');
 const { openBudget, closeBudget, sleepAbortable } = require('./utils');
 const { linkOnce } = require('./linker');
+const { configureArgs, runLinkJob, triggerDebounced } = require('./runner');
+const http = require('http');
+const https = require('https');
+const { URL } = require('url');
 
 async function runOnce(argv) {
   const {
@@ -71,29 +75,44 @@ async function runDaemon(argv) {
   // Keep budget open across iterations for performance
   await openBudget();
   try {
+    // Configure shared runner with current args supplier
+    configureArgs(() => ({
+      lookbackDays: argv.lookbackDays,
+      windowHours: argv.windowHours,
+      minScore: argv.minScore,
+      dryRun: argv.dryRun,
+      deleteDuplicate: argv.deleteDuplicate,
+      clearedOnly: argv.clearedOnly,
+      keep: argv.keep,
+      skipReconciled: argv.skipReconciled,
+      preferReconciled: argv.preferReconciled,
+      includeAccounts:
+        normalizeList(argv.includeAccounts).length > 0
+          ? normalizeList(argv.includeAccounts)
+          : cfg.INCLUDE_ACCOUNTS,
+      excludeAccounts:
+        normalizeList(argv.excludeAccounts).length > 0
+          ? normalizeList(argv.excludeAccounts)
+          : cfg.EXCLUDE_ACCOUNTS,
+      mergeNotes: argv.mergeNotes,
+      maxLinksPerRun: argv.maxLinksPerRun,
+    }));
+
+    // Optional: integrate with actual-events SSE
+    const enableEvents =
+      /^true$/i.test(process.env.ENABLE_EVENTS || '') ||
+      process.env.ENABLE_EVENTS === '1';
+    const eventsUrl = process.env.EVENTS_URL || '';
+    const authToken = process.env.EVENTS_AUTH_TOKEN || '';
+    if (enableEvents && eventsUrl) {
+      startEventsListener({ eventsUrl, authToken, verbose: argv.verbose });
+    } else if (enableEvents && !eventsUrl) {
+      logger.warn('ENABLE_EVENTS set but EVENTS_URL missing; skipping event listener');
+    }
+
     while (!stopping) {
       try {
-        await linkOnce({
-          lookbackDays: argv.lookbackDays,
-          windowHours: argv.windowHours,
-          minScore: argv.minScore,
-          dryRun: argv.dryRun,
-          deleteDuplicate: argv.deleteDuplicate,
-          clearedOnly: argv.clearedOnly,
-          keep: argv.keep,
-          skipReconciled: argv.skipReconciled,
-          preferReconciled: argv.preferReconciled,
-          includeAccounts:
-            normalizeList(argv.includeAccounts).length > 0
-              ? normalizeList(argv.includeAccounts)
-              : cfg.INCLUDE_ACCOUNTS,
-          excludeAccounts:
-            normalizeList(argv.excludeAccounts).length > 0
-              ? normalizeList(argv.excludeAccounts)
-              : cfg.EXCLUDE_ACCOUNTS,
-          mergeNotes: argv.mergeNotes,
-          maxLinksPerRun: argv.maxLinksPerRun,
-        });
+        await runLinkJob();
       } catch (err) {
         logger.warn('Daemon iteration failed:', err?.message || err);
       }
@@ -214,4 +233,102 @@ function normalizeList(val) {
         .map((s) => s.trim()),
     )
     .filter(Boolean);
+}
+
+// Lightweight SSE client to subscribe to actual-events and trigger linking runs
+function startEventsListener({ eventsUrl, authToken, verbose }) {
+  try {
+    const base = new URL(eventsUrl);
+    if (!base.searchParams.get('events')) {
+      base.searchParams.set('events', '^transaction\\.(created|updated)$');
+      base.searchParams.set('entities', 'transaction');
+      base.searchParams.set('useRegex', 'true');
+    }
+    const isHttps = base.protocol === 'https:';
+    const agent = isHttps ? https : http;
+    let lastId = undefined;
+    let retryMs = 2000;
+
+    const connect = () => {
+      const headers = {};
+      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+      if (lastId) headers['Last-Event-ID'] = lastId;
+      headers['Accept'] = 'text/event-stream';
+      const req = agent.request(
+        base,
+        { method: 'GET', headers },
+        (res) => {
+          if (res.statusCode !== 200) {
+            logger.warn(
+              { status: res.statusCode },
+              'Event stream returned non-200; will retry',
+            );
+            res.resume();
+            setTimeout(connect, retryMs);
+            retryMs = Math.min(30000, retryMs * 2);
+            return;
+          }
+          logger.info({ url: base.toString() }, 'Connected to event stream');
+          retryMs = 2000;
+          let buf = '';
+          res.on('data', (chunk) => {
+            buf += chunk.toString('utf8');
+            let idx;
+            while ((idx = buf.indexOf('\n\n')) !== -1) {
+              const raw = buf.slice(0, idx);
+              buf = buf.slice(idx + 2);
+              handleEvent(raw);
+            }
+          });
+          res.on('end', () => {
+            logger.warn('Event stream ended; reconnecting');
+            setTimeout(connect, retryMs);
+            retryMs = Math.min(30000, retryMs * 2);
+          });
+        },
+      );
+      req.on('error', (err) => {
+        logger.warn({ err }, 'Event stream error; reconnecting');
+        setTimeout(connect, retryMs);
+        retryMs = Math.min(30000, retryMs * 2);
+      });
+      req.end();
+    };
+
+    const handleEvent = (raw) => {
+      try {
+        const lines = raw.split(/\r?\n/);
+        let id = null;
+        let event = 'message';
+        let data = '';
+        for (const line of lines) {
+          if (!line) continue;
+          if (line.startsWith('id:')) id = line.slice(3).trim();
+          else if (line.startsWith('event:')) event = line.slice(6).trim();
+          else if (line.startsWith('data:')) data += line.slice(5).trim();
+        }
+        if (id) lastId = id;
+        if (!data) return;
+        const payload = JSON.parse(data);
+        if (
+          event === 'transaction.created' ||
+          event === 'transaction.updated'
+        ) {
+          if (verbose) {
+            logger.info(
+              { event, txId: payload?.after?.id || payload?.before?.id },
+              'Event received; scheduling link run',
+            );
+          }
+          triggerDebounced({ delayMs: 1500 });
+        }
+      } catch (e) {
+        /* ignore */ void 0;
+      }
+    };
+
+    connect();
+  } catch (err) {
+    logger.warn({ err }, 'Failed to start event listener');
+  }
 }
