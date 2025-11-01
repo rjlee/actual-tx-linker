@@ -353,6 +353,10 @@ async function linkOnce({
           keepTx.account === m.out.account ? m.inc.account : m.out.account;
         const transferPayeeId = await ensureTransferPayeeId(destAccountId);
         const fields = { payee: transferPayeeId };
+        // Ensure transfers have no category; clear if present
+        if (keepTx.category != null) {
+          fields.category = null;
+        }
         if (mergeNotes) {
           const merged = buildMergedNotes(
             keepTx,

@@ -51,6 +51,30 @@ async function runOnce(argv) {
   }
 }
 
+async function runRepair(argv) {
+  const { lookbackDays, windowHours, minScore, verbose } = argv;
+  if (verbose) logger.level = 'debug';
+  const { repairOnce } = require('./repair');
+  await openBudget();
+  try {
+    const count = await repairOnce({
+      lookbackDays,
+      windowHours,
+      minScore,
+      deleteDuplicate: argv.deleteDuplicate,
+      dryRun: argv.dryRun,
+      clearedOnly: argv.clearedOnly,
+      skipReconciled: argv.skipReconciled,
+      preferReconciled: argv.preferReconciled,
+      keep: argv.keep,
+      maxRepairsPerRun: argv.maxLinksPerRun,
+    });
+    logger.info(`Repaired ${count} transfers`);
+  } finally {
+    await closeBudget();
+  }
+}
+
 async function runDaemon(argv) {
   const intervalMs = Math.max(1, argv.intervalMins) * 60 * 1000;
   if (argv.verbose) logger.level = 'debug';
@@ -132,7 +156,7 @@ async function main() {
   const argv = yargs(hideBin(process.argv))
     .option('mode', {
       alias: 'm',
-      choices: ['link-once', 'daemon'],
+      choices: ['link-once', 'daemon', 'repair'],
       default: 'link-once',
       describe: 'Run once or run on interval',
     })
@@ -214,8 +238,10 @@ async function main() {
   const mode = argv.mode;
   if (mode === 'link-once') {
     await runOnce(argv);
-  } else {
+  } else if (mode === 'daemon') {
     await runDaemon(argv);
+  } else if (mode === 'repair') {
+    await runRepair(argv);
   }
 }
 

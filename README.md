@@ -31,6 +31,8 @@ CLI
 - One-off linking (dry-run by default): `node src/index.js --mode link-once`
 - Daemon every N minutes: `node src/index.js --mode daemon --interval-mins 5`
   - Stop the daemon with Ctrl+C; it shuts down gracefully and closes the budget.
+- Repair broken/self-transfers: `node src/index.js --mode repair`
+  - Scans recent transactions for self-transfer payees that Actual marks as “Needs Repair” and fixes them by pointing to the correct opposite account, optionally deleting the duplicate counterpart.
 
 ### Optional: Event-based triggers (actual-events)
 
@@ -64,6 +66,13 @@ Common flags
 - `--prefer-reconciled` (boolean, default true): when not skipping reconciled, keep the reconciled side if only one is reconciled
 - `--max-links-per-run` (number, default 50): cap changes per run for safety
 - `--verbose` (boolean): more logs
+
+Repair specifics
+
+- Targets transactions using a transfer payee that points back to the same account (self-transfer), a common cause of “Needs Repair”.
+- Re-selects the correct transfer payee for the opposite account and (optionally) deletes the redundant duplicate on the other account.
+- Respects `--dry-run` the same as linking (defaults to true, can be overridden by CLI or `DRY_RUN` env).
+- Also respects `--cleared-only`, `--skip-reconciled`, `--keep`, and `--prefer-reconciled`.
 
 Heuristics
 
