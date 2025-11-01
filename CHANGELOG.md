@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/rjlee/actual-tx-linker/compare/v1.4.0...v1.5.0) (2025-11-01)
+
+
+### Features
+
+* Add 'pair-multiples' option to link transactions deterministically and implement corresponding tests ([92634be](https://github.com/rjlee/actual-tx-linker/commit/92634befd26ed2b09688f8a3b177ddd9c9ac14f9))
+
 # [1.4.0](https://github.com/rjlee/actual-tx-linker/compare/v1.3.1...v1.4.0) (2025-11-01)
 
 
