@@ -61,7 +61,11 @@ describe('repairOnce', () => {
       return Promise.resolve([]);
     });
 
-    const repaired = await repairOnce({ minScore: 0, clearedOnly: true, dryRun: false });
+    const repaired = await repairOnce({
+      minScore: 0,
+      clearedOnly: true,
+      dryRun: false,
+    });
     expect(repaired).toBe(1);
     expect(api.createPayee).toHaveBeenCalledWith({
       name: '',
