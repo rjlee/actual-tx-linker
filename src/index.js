@@ -44,6 +44,7 @@ async function runOnce(argv) {
           : cfg.EXCLUDE_ACCOUNTS,
       mergeNotes: argv.mergeNotes,
       maxLinksPerRun: argv.maxLinksPerRun,
+      pairMultiples: argv.pairMultiples,
     });
     logger.info(`Linked ${count} transfers`);
   } finally {
@@ -120,6 +121,7 @@ async function runDaemon(argv) {
           : cfg.EXCLUDE_ACCOUNTS,
       mergeNotes: argv.mergeNotes,
       maxLinksPerRun: argv.maxLinksPerRun,
+      pairMultiples: argv.pairMultiples,
     }));
 
     // Optional: integrate with actual-events SSE
@@ -211,6 +213,12 @@ async function main() {
       type: 'boolean',
       default: true,
       describe: 'Delete the original duplicate after linking',
+    })
+    .option('pair-multiples', {
+      type: 'boolean',
+      default: true,
+      describe:
+        'Deterministically pair same-day, same-amount multiples instead of skipping as ambiguous',
     })
     .option('merge-notes', {
       type: 'boolean',

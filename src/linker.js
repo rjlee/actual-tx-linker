@@ -143,6 +143,7 @@ async function linkOnce({
   maxLinksPerRun = 50,
   skipReconciled = true,
   preferReconciled = true,
+  pairMultiples = true,
 } = {}) {
   const now = new Date();
   const start = new Date(now.getTime() - lookbackDays * 24 * 60 * 60 * 1000);
@@ -207,6 +208,7 @@ async function linkOnce({
 
   const incomingByAmt = keyByAmount(incoming);
   const matches = [];
+  const ambiguousGroups = new Map(); // key -> { outs: [], incIds: Set(), incAcct: string }
   const stats = {
     totalOutgoing: negatives.length,
     totalIncoming: positives.length,
@@ -252,23 +254,43 @@ async function linkOnce({
     stats.candidatesEvaluated += scored.length;
     scored.sort((a, b) => b.sameDay - a.sameDay || b.score - a.score);
     const best = scored[0];
-    // If multiple candidates share the same top priority (sameDay and score), mark ambiguous
-    const isAmbiguous =
-      scored.length > 1 &&
-      scored[1].sameDay === best.sameDay &&
-      scored[1].score === best.score &&
-      best.score >= minScore;
+    // Determine top-priority candidate set (sameDay priority, then equal score)
+    let topSameDay = best ? best.sameDay : 0;
+    let topScore = best ? best.score : 0;
+    const topCands = scored.filter(
+      (s) => s.sameDay === topSameDay && s.score === topScore,
+    );
+    const isAmbiguous = topCands.length > 1 && topScore >= minScore;
     if (isAmbiguous) {
-      stats.ambiguous += 1;
-      const outName =
-        (accountsById[out.account] && accountsById[out.account].name) ||
-        out.account;
-      logger.debug(
-        `Skip ambiguous match for ${outName} amount=${formatAmount(Math.abs(out.amount))} on ${out.date}`,
-      );
-      continue;
+      if (pairMultiples) {
+        // Only consider for grouping if all candidates are from the same incoming account
+        const incAcct = topCands[0].c.account;
+        const sameAcct = topCands.every((s) => s.c.account === incAcct);
+        if (!sameAcct) {
+          stats.ambiguous += 1;
+          continue;
+        }
+        const key = `${Math.abs(out.amount)}|${out.date}|${incAcct}`;
+        let g = ambiguousGroups.get(key);
+        if (!g) {
+          g = { outs: [], incIds: new Set(), incAcct };
+          ambiguousGroups.set(key, g);
+        }
+        g.outs.push(out);
+        for (const s of topCands) g.incIds.add(s.c.id);
+        continue;
+      } else {
+        stats.ambiguous += 1;
+        const outName =
+          (accountsById[out.account] && accountsById[out.account].name) ||
+          out.account;
+        logger.debug(
+          `Skip ambiguous match for ${outName} amount=${formatAmount(Math.abs(out.amount))} on ${out.date}`,
+        );
+        continue;
+      }
     }
-    if (best.score >= minScore) {
+    if (best && best.score >= minScore) {
       matches.push({
         out,
         inc: best.c,
@@ -283,6 +305,30 @@ async function linkOnce({
       logger.debug(
         `Skip below-score match for ${outName} amount=${formatAmount(Math.abs(out.amount))} on ${out.date} (top=${best.score.toFixed(2)})`,
       );
+    }
+  }
+
+  // Resolve grouped ambiguities deterministically if enabled
+  if (pairMultiples && ambiguousGroups.size > 0) {
+    // Build id -> txn map
+    const byId = new Map(all.map((t) => [t.id, t]));
+    for (const [key, group] of ambiguousGroups.entries()) {
+      const outs = group.outs.slice().sort((a, b) => a.id.localeCompare(b.id));
+      const incs = Array.from(group.incIds)
+        .map((id) => byId.get(id))
+        .filter(Boolean)
+        .sort((a, b) => a.id.localeCompare(b.id));
+      if (outs.length !== incs.length || outs.length === 0) {
+        continue; // can't pair reliably
+      }
+      for (let i = 0; i < outs.length; i += 1) {
+        matches.push({
+          out: outs[i],
+          inc: incs[i],
+          score: 1,
+          sameDay: true,
+        });
+      }
     }
   }
 

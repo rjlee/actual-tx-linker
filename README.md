@@ -65,6 +65,7 @@ Common flags
 - `--skip-reconciled` (boolean, default true): skip reconciled transactions entirely
 - `--prefer-reconciled` (boolean, default true): when not skipping reconciled, keep the reconciled side if only one is reconciled
 - `--max-links-per-run` (number, default 50): cap changes per run for safety
+- `--pair-multiples` (boolean, default true): when multiple same-day, same-amount candidates exist on both sides, pair deterministically by id instead of skipping as ambiguous
 - `--verbose` (boolean): more logs
 
 Repair specifics
