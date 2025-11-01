@@ -1,3 +1,15 @@
+# [1.2.0](https://github.com/rjlee/actual-tx-linker/compare/v1.1.1...v1.2.0) (2025-11-01)
+
+
+### Bug Fixes
+
+* Improve formatting and readability in event listener and debounce functions ([4cba154](https://github.com/rjlee/actual-tx-linker/commit/4cba154abc36a3c3396528a46e898ef567d52bca))
+
+
+### Features
+
+* Add event-based triggers for near-real-time linking with actual-events ([196a938](https://github.com/rjlee/actual-tx-linker/commit/196a9387fa894e30d97c8c409787ca6aaaa4c011))
+
 ## [1.1.1](https://github.com/rjlee/actual-tx-linker/compare/v1.1.0...v1.1.1) (2025-10-30)
 
 
