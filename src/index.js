@@ -107,7 +107,9 @@ async function runDaemon(argv) {
     if (enableEvents && eventsUrl) {
       startEventsListener({ eventsUrl, authToken, verbose: argv.verbose });
     } else if (enableEvents && !eventsUrl) {
-      logger.warn('ENABLE_EVENTS set but EVENTS_URL missing; skipping event listener');
+      logger.warn(
+        'ENABLE_EVENTS set but EVENTS_URL missing; skipping event listener',
+      );
     }
 
     while (!stopping) {
@@ -254,39 +256,35 @@ function startEventsListener({ eventsUrl, authToken, verbose }) {
       if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
       if (lastId) headers['Last-Event-ID'] = lastId;
       headers['Accept'] = 'text/event-stream';
-      const req = agent.request(
-        base,
-        { method: 'GET', headers },
-        (res) => {
-          if (res.statusCode !== 200) {
-            logger.warn(
-              { status: res.statusCode },
-              'Event stream returned non-200; will retry',
-            );
-            res.resume();
-            setTimeout(connect, retryMs);
-            retryMs = Math.min(30000, retryMs * 2);
-            return;
+      const req = agent.request(base, { method: 'GET', headers }, (res) => {
+        if (res.statusCode !== 200) {
+          logger.warn(
+            { status: res.statusCode },
+            'Event stream returned non-200; will retry',
+          );
+          res.resume();
+          setTimeout(connect, retryMs);
+          retryMs = Math.min(30000, retryMs * 2);
+          return;
+        }
+        logger.info({ url: base.toString() }, 'Connected to event stream');
+        retryMs = 2000;
+        let buf = '';
+        res.on('data', (chunk) => {
+          buf += chunk.toString('utf8');
+          let idx;
+          while ((idx = buf.indexOf('\n\n')) !== -1) {
+            const raw = buf.slice(0, idx);
+            buf = buf.slice(idx + 2);
+            handleEvent(raw);
           }
-          logger.info({ url: base.toString() }, 'Connected to event stream');
-          retryMs = 2000;
-          let buf = '';
-          res.on('data', (chunk) => {
-            buf += chunk.toString('utf8');
-            let idx;
-            while ((idx = buf.indexOf('\n\n')) !== -1) {
-              const raw = buf.slice(0, idx);
-              buf = buf.slice(idx + 2);
-              handleEvent(raw);
-            }
-          });
-          res.on('end', () => {
-            logger.warn('Event stream ended; reconnecting');
-            setTimeout(connect, retryMs);
-            retryMs = Math.min(30000, retryMs * 2);
-          });
-        },
-      );
+        });
+        res.on('end', () => {
+          logger.warn('Event stream ended; reconnecting');
+          setTimeout(connect, retryMs);
+          retryMs = Math.min(30000, retryMs * 2);
+        });
+      });
       req.on('error', (err) => {
         logger.warn({ err }, 'Event stream error; reconnecting');
         setTimeout(connect, retryMs);

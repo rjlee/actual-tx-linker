@@ -41,10 +41,12 @@ async function runLinkJob() {
 
 function triggerDebounced({ delayMs = 1500 } = {}) {
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => {
-    runLinkJob().catch(() => {});
-  }, Math.max(0, delayMs));
+  debounceTimer = setTimeout(
+    () => {
+      runLinkJob().catch(() => {});
+    },
+    Math.max(0, delayMs),
+  );
 }
 
 module.exports = { configureArgs, runLinkJob, triggerDebounced };
-
