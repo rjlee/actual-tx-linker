@@ -3,7 +3,7 @@ version: '3.8'
 services:
   tx-linker:
     # Use the published GHCR image by default; comment out 'image' and uncomment 'build' to rebuild locally
-    image: ghcr.io/rjlee/actual-tx-linker:latest
+    image: ghcr.io/rjlee/actual-tx-linker:api-${ACTUAL_API_MAJOR}
     # build: .
     container_name: actual-tx-linker
     env_file:
