@@ -1,3 +1,10 @@
+## [1.6.2](https://github.com/rjlee/actual-tx-linker/compare/v1.6.1...v1.6.2) (2025-11-02)
+
+
+### Bug Fixes
+
+* support actual api version specification in docker compose file ([ab30f1a](https://github.com/rjlee/actual-tx-linker/commit/ab30f1a8aa038ed82c2e1ba04dd55f21c7aef201))
+
 ## [1.6.1](https://github.com/rjlee/actual-tx-linker/compare/v1.6.0...v1.6.1) (2025-11-02)
 
 
