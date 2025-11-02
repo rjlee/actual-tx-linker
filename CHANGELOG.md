@@ -1,3 +1,11 @@
+## [1.6.1](https://github.com/rjlee/actual-tx-linker/compare/v1.6.0...v1.6.1) (2025-11-02)
+
+
+### Bug Fixes
+
+* reduce test threshold ([1701f89](https://github.com/rjlee/actual-tx-linker/commit/1701f8943ae205e09a1b14f6f6ee5ccfbad9a873))
+* removing temp script ([77ac619](https://github.com/rjlee/actual-tx-linker/commit/77ac619e2e7b9fb031fd986a2788c5c11bd70e69))
+
 # [1.6.0](https://github.com/rjlee/actual-tx-linker/compare/v1.5.0...v1.6.0) (2025-11-01)
 
 
