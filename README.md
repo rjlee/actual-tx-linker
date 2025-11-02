@@ -1,13 +1,14 @@
 # Actual Transaction Linker
 
-Links matching inter-account transactions (e.g., Monzo → Starling) in Actual into proper transfers and removes duplicates created by bank importers (e.g., GoCardless).
+Automatically links inter‑account transfers in Actual. It detects matching transactions across accounts, converts the kept side into a proper transfer (so Actual creates the counterpart), removes the duplicate, and fixes common “Needs Repair” cases (e.g., self‑transfers or transfers with categories). Run it on demand or as a small daemon, optionally reacting to events for near‑real‑time linking.
 
 Key features
 
 - Detects matches by amount, time window, and text similarity
-- Converts one side into a transfer so Actual auto-creates the linked counterpart
-- Deletes the redundant duplicate on the other account
-- Supports dry-run and daemon (interval) mode
+- Pairs same‑day, same‑amount multiples deterministically to avoid ambiguity
+- Converts one side into a transfer so Actual auto‑creates the counterpart
+- Clears categories on transfers; repairs self‑transfers and broken/orphaned links
+- Supports dry‑run, daemon mode, and optional event‑based triggering
 
 Prerequisites
 
