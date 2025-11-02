@@ -188,6 +188,7 @@ async function repairOnce({
   const negatives = all.filter((t) => t.amount < 0 && !isSplit(t));
   const posByAmt = keyByAmount(positives);
   const negByAmt = keyByAmount(negatives);
+  const byId = new Map(all.map((t) => [t.id, t]));
   let repaired = 0;
   const usedIds = new Set();
 
@@ -282,6 +283,72 @@ async function repairOnce({
       }
     } catch (err) {
       logger.warn('Repair: update failed', err?.message || err);
+    }
+  }
+  // Third: repair inconsistent/missing transfer links where transfer_id exists
+  for (const tx of all) {
+    if (repaired >= maxRepairsPerRun) break;
+    if (isSplit(tx)) continue;
+    if (clearedOnly && tx.cleared !== true) continue;
+    if (skipReconciled && tx.reconciled === true) continue;
+    if (!tx.transfer_id) continue;
+    if (usedIds.has(tx.id)) continue;
+    const other = byId.get(tx.transfer_id);
+    const p = tx.payee ? payeeById.get(tx.payee) : null;
+    // Case A: counterpart exists, but payee doesn't point to counterpart account
+    if (other && (!p || p.transfer_acct !== other.account)) {
+      const srcAcct = accountsById[tx.account]?.name || tx.account;
+      const dstAcct = accountsById[other.account]?.name || other.account;
+      logger.info(
+        `Repair: aligning transfer payee on linked pair ${srcAcct} -> ${dstAcct} date=${tx.date}`,
+      );
+      try {
+        if (dryRun) {
+          logger.info(
+            `DRY RUN: would set transfer payee on txn ${tx.id} to account ${other.account}`,
+          );
+        } else {
+          const transferPayeeId = await ensureTransferPayeeId(other.account);
+          const fields = { payee: transferPayeeId };
+          if (tx.category != null) fields.category = null;
+          await api.updateTransaction(tx.id, fields);
+          usedIds.add(tx.id);
+          repaired += 1;
+        }
+      } catch (err) {
+        logger.warn(
+          'Repair: failed to align transfer payee',
+          err?.message || err,
+        );
+      }
+      continue;
+    }
+    // Case B: counterpart missing; if payee already indicates a transfer account, re-apply payee to trigger relink
+    if (!other && p && p.transfer_acct) {
+      const srcAcct = accountsById[tx.account]?.name || tx.account;
+      const dstAcct = accountsById[p.transfer_acct]?.name || p.transfer_acct;
+      logger.info(
+        `Repair: relinking orphaned transfer on ${srcAcct} -> ${dstAcct} date=${tx.date}`,
+      );
+      try {
+        if (dryRun) {
+          logger.info(
+            `DRY RUN: would re-apply transfer payee on txn ${tx.id} to account ${p.transfer_acct}`,
+          );
+        } else {
+          const transferPayeeId = await ensureTransferPayeeId(p.transfer_acct);
+          const fields = { payee: transferPayeeId };
+          if (tx.category != null) fields.category = null;
+          await api.updateTransaction(tx.id, fields);
+          usedIds.add(tx.id);
+          repaired += 1;
+        }
+      } catch (err) {
+        logger.warn(
+          'Repair: failed to relink orphaned transfer',
+          err?.message || err,
+        );
+      }
     }
   }
   // Second: clear categories on valid transfers
