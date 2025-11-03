@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/rjlee/actual-tx-linker/compare/v1.6.2...v1.7.0) (2025-11-03)
+
+
+### Features
+
+* added interactive cli mode ([bad6423](https://github.com/rjlee/actual-tx-linker/commit/bad64239b4c241b53304124fc3ba3d1c18654724))
+
 ## [1.6.2](https://github.com/rjlee/actual-tx-linker/compare/v1.6.1...v1.6.2) (2025-11-02)
 
 
