@@ -42,7 +42,7 @@ CLI
   - Interactive confirm per link: add `--interactive` (or `-i`).
   - Exact date range: add `--start-date YYYY-MM-DD --end-date YYYY-MM-DD`.
 - Daemon (cron-scheduled): `node src/index.js --mode daemon`
-  - Schedule via env: `LINK_CRON` (default: `0 * * * *`) and `LINK_CRON_TIMEZONE` (default: `UTC`).
+  - Schedule via env: `LINK_CRON` (default: `15 * * * *`) and `LINK_CRON_TIMEZONE` (default: `UTC`).
   - Disable cron by setting `DISABLE_CRON_SCHEDULING=true` (no fallback interval mode).
   - Stop the daemon with Ctrl+C; it shuts down gracefully and closes the budget.
 - Repair broken/self-transfers: `node src/index.js --mode repair`

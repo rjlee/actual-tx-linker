@@ -82,7 +82,7 @@ async function runRepair(argv) {
 
 function scheduleLinking() {
   const disableCron = process.env.DISABLE_CRON_SCHEDULING === 'true';
-  const schedule = process.env.LINK_CRON || '0 * * * *';
+  const schedule = process.env.LINK_CRON || '15 * * * *';
   const timezone = process.env.LINK_CRON_TIMEZONE || 'UTC';
   if (disableCron) {
     logger.info({ job: 'linker' }, 'Cron scheduling disabled');
