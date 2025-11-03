@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/rjlee/actual-tx-linker/compare/v1.7.0...v1.7.1) (2025-11-03)
+
+
+### Bug Fixes
+
+* amend cron schedule ([eafa24e](https://github.com/rjlee/actual-tx-linker/commit/eafa24e98b80b1a446041a7551d624ea02678d0a))
+
 # [1.7.0](https://github.com/rjlee/actual-tx-linker/compare/v1.6.2...v1.7.0) (2025-11-03)
 
 
