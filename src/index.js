@@ -11,6 +11,7 @@ const { configureArgs, runLinkJob, triggerDebounced } = require('./runner');
 const http = require('http');
 const https = require('https');
 const { URL } = require('url');
+const cron = require('node-cron');
 
 async function runOnce(argv) {
   const {
@@ -79,6 +80,39 @@ async function runRepair(argv) {
   }
 }
 
+function scheduleLinking() {
+  const disableCron = process.env.DISABLE_CRON_SCHEDULING === 'true';
+  const schedule = process.env.LINK_CRON || '0 * * * *';
+  const timezone = process.env.LINK_CRON_TIMEZONE || 'UTC';
+  if (disableCron) {
+    logger.info({ job: 'linker' }, 'Cron scheduling disabled');
+    return false;
+  }
+  if (!cron.validate(schedule)) {
+    logger.error({ schedule }, `Invalid LINK_CRON: ${schedule}`);
+    process.exit(1);
+  }
+  logger.info(
+    { job: 'linker', schedule, timezone },
+    'Scheduling linker daemon',
+  );
+  cron.schedule(
+    schedule,
+    async () => {
+      const ts = new Date().toISOString();
+      logger.info({ ts }, 'Daemon link run start');
+      try {
+        await runLinkJob();
+        logger.info({ ts }, 'Daemon link run complete');
+      } catch (err) {
+        logger.warn('Daemon link run failed:', err?.message || err);
+      }
+    },
+    timezone ? { timezone } : {},
+  );
+  return true;
+}
+
 async function runDaemon(argv) {
   const intervalMs = Math.max(1, argv.intervalMins) * 60 * 1000;
   if (argv.verbose) logger.level = 'debug';
@@ -143,13 +177,23 @@ async function runDaemon(argv) {
       );
     }
 
-    while (!stopping) {
-      try {
-        await runLinkJob();
-      } catch (err) {
-        logger.warn('Daemon iteration failed:', err?.message || err);
+    // If cron scheduling is enabled, do not use interval loop
+    const usingCron = scheduleLinking();
+    if (!usingCron) {
+      while (!stopping) {
+        try {
+          await runLinkJob();
+        } catch (err) {
+          logger.warn('Daemon iteration failed:', err?.message || err);
+        }
+        await sleepAbortable(intervalMs, controller.signal);
       }
-      await sleepAbortable(intervalMs, controller.signal);
+    } else {
+      // Keep process alive while cron timers run
+      // eslint-disable-next-line no-constant-condition
+      while (!stopping) {
+        await sleepAbortable(60 * 1000, controller.signal);
+      }
     }
   } finally {
     await closeBudget();

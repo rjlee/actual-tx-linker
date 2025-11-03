@@ -30,7 +30,6 @@ module.exports = {
   LOOKBACK_DAYS: parseInt(process.env.LOOKBACK_DAYS || '14', 10),
   WINDOW_HOURS: parseInt(process.env.WINDOW_HOURS || '72', 10),
   MIN_SCORE: parseFloat(process.env.MIN_SCORE || '0.2'),
-  INTERVAL_MINS: parseInt(process.env.INTERVAL_MINS || '5', 10),
   INCLUDE_ACCOUNTS: parseListEnv(process.env.INCLUDE_ACCOUNTS),
   EXCLUDE_ACCOUNTS: parseListEnv(process.env.EXCLUDE_ACCOUNTS),
   // New env-driven defaults for formerly CLI-only opts

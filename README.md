@@ -26,7 +26,7 @@ Provide env vars (via shell or `.env` file at project root):
 - `INCLUDE_ACCOUNTS` (optional): Comma-separated list of exact account names or ids to include
 - `EXCLUDE_ACCOUNTS` (optional): Comma-separated list of exact account names or ids to exclude
 - `DRY_RUN` (optional): `true` (default) logs actions only; set to `false` to apply links without passing the CLI flag
-- `LOOKBACK_DAYS` / `WINDOW_HOURS` / `MIN_SCORE` / `INTERVAL_MINS` (optional): default scan/timing values used unless overridden by CLI
+- `LOOKBACK_DAYS` / `WINDOW_HOURS` / `MIN_SCORE` (optional): default scan/timing values used unless overridden by CLI
 - `MAX_LINKS_PER_RUN` (optional, default 50): cap changes per run
 - `PAIR_MULTIPLES` (optional, default `true`): deterministically pair same‑day, same‑amount multiples
 - `DELETE_DUPLICATE` (optional, default `true`): delete the duplicate counterpart after linking
@@ -41,14 +41,16 @@ CLI
 - One-off linking (dry-run by default): `node src/index.js --mode link-once`
   - Interactive confirm per link: add `--interactive` (or `-i`).
   - Exact date range: add `--start-date YYYY-MM-DD --end-date YYYY-MM-DD`.
-- Daemon every N minutes: `node src/index.js --mode daemon --interval-mins 5`
+- Daemon (cron-scheduled): `node src/index.js --mode daemon`
+  - Schedule via env: `LINK_CRON` (default: `0 * * * *`) and `LINK_CRON_TIMEZONE` (default: `UTC`).
+  - Disable cron by setting `DISABLE_CRON_SCHEDULING=true` (no fallback interval mode).
   - Stop the daemon with Ctrl+C; it shuts down gracefully and closes the budget.
 - Repair broken/self-transfers: `node src/index.js --mode repair`
   - Scans recent transactions for self-transfer payees that Actual marks as “Needs Repair” and fixes them by pointing to the correct opposite account, optionally deleting the duplicate counterpart.
 
 ### Optional: Event-based triggers (actual-events)
 
-You can optionally listen to events from the `actual-events` sidecar to trigger near-real-time linking when new transactions arrive. This runs alongside the daemon interval (interval remains a fallback) and debounces bursts of events to avoid redundant runs.
+You can optionally listen to events from the `actual-events` sidecar to trigger near‑real‑time linking when new transactions arrive. This runs alongside the cron schedule and debounces bursts of events to avoid redundant runs.
 
 Enable via environment variables:
 
