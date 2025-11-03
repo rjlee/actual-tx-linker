@@ -1,6 +1,7 @@
 const api = require('@actual-app/api');
 const logger = require('./logger');
 const { sleep } = require('./utils');
+const readline = require('readline');
 
 function normalizeText(s) {
   if (!s) return '';
@@ -75,6 +76,29 @@ function formatYMD(dateish) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function parseYMDStrict(value, label = 'date') {
+  if (typeof value !== 'string') {
+    throw new Error(`Invalid ${label}: expected YYYY-MM-DD string`);
+  }
+  const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) {
+    throw new Error(
+      `Invalid ${label} format: '${value}'. Expected YYYY-MM-DD (no time).`,
+    );
+  }
+  const year = Number(m[1]);
+  const month = Number(m[2]);
+  const day = Number(m[3]);
+  const dt = new Date(Date.UTC(year, month - 1, day));
+  // Validate round-trip to catch invalid dates like 2025-02-30
+  if (formatYMD(dt) !== value) {
+    throw new Error(
+      `Invalid ${label} value: '${value}' is not a real calendar date`,
+    );
+  }
+  return dt;
+}
+
 function sameDay(a, b) {
   const da = new Date(a);
   const db = new Date(b);
@@ -92,6 +116,36 @@ async function ensureTransferPayeeId(destAccountId) {
   // Create a new transfer payee for dest account
   p = await api.createPayee({ name: '', transfer_acct: destAccountId });
   return p.id || p; // API may return id or object
+}
+
+/* istanbul ignore next */
+function prompt(question) {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(String(answer || '').trim());
+    });
+  });
+}
+
+function describeTxn(tx, accountName) {
+  const dir = tx.amount < 0 ? 'outgoing' : 'incoming';
+  const parts = [];
+  parts.push(`- account: ${accountName || tx.account}`);
+  parts.push(
+    `- id: ${tx.id} | date: ${tx.date} | amount: ${formatAmount(Math.abs(tx.amount))} (${dir})`,
+  );
+  parts.push(`- cleared: ${!!tx.cleared} | reconciled: ${!!tx.reconciled}`);
+  if (tx.description) parts.push(`- description: ${tx.description}`);
+  if (tx.imported_description)
+    parts.push(`- imported_description: ${tx.imported_description}`);
+  if (tx.imported_payee) parts.push(`- imported_payee: ${tx.imported_payee}`);
+  if (tx.notes) parts.push(`- notes: ${tx.notes}`);
+  return parts.join('\n');
 }
 
 function chooseKeepAndDrop(
@@ -144,11 +198,28 @@ async function linkOnce({
   skipReconciled = true,
   preferReconciled = true,
   pairMultiples = true,
+  interactive = false,
+  startDate = undefined,
+  endDate = undefined,
 } = {}) {
+  const dayMs = 24 * 60 * 60 * 1000;
   const now = new Date();
-  const start = new Date(now.getTime() - lookbackDays * 24 * 60 * 60 * 1000);
-  const startYMD = formatYMD(start);
-  const endYMD = formatYMD(now);
+  const endObj = endDate ? parseYMDStrict(endDate, 'end-date') : now;
+  const startObj = startDate
+    ? parseYMDStrict(startDate, 'start-date')
+    : new Date(endObj.getTime() - lookbackDays * dayMs);
+  const startYMD = formatYMD(startObj);
+  const endYMD = formatYMD(endObj);
+  if (endDate && !startDate) {
+    logger.info(
+      `Only --end-date provided; using start-date ${startYMD} computed from lookback-days=${lookbackDays}`,
+    );
+  }
+  if (new Date(startYMD) > new Date(endYMD)) {
+    throw new Error(
+      `Invalid date range: start-date ${startYMD} after end-date ${endYMD}`,
+    );
+  }
 
   logger.info('Fetching accounts');
   const accounts = await api.getAccounts();
@@ -378,6 +449,7 @@ async function linkOnce({
       );
     }
   } else {
+    let approveAll = false;
     for (const m of final) {
       const srcAcct = accountsById[m.out.account];
       const dstAcct = accountsById[m.inc.account];
@@ -387,6 +459,31 @@ async function linkOnce({
           `dates=${m.out.date} & ${m.inc.date}` +
           (m.sameDay ? ' (same-day)' : ''),
       );
+      /* istanbul ignore next */
+      if (interactive && process.stdin.isTTY && !approveAll) {
+        try {
+          const header = `\nCandidate match details:\n`;
+          const left = describeTxn(m.out, srcAcct?.name);
+          const right = describeTxn(m.inc, dstAcct?.name);
+          process.stdout.write(header);
+          process.stdout.write('Outgoing transaction:\n');
+          process.stdout.write(left + '\n');
+          process.stdout.write('Incoming transaction:\n');
+          process.stdout.write(right + '\n');
+          // eslint-disable-next-line no-await-in-loop
+          const ans = (
+            await prompt('Link this pair? [Y]es/[n]o/[a]ll/[q]uit: ')
+          ).toLowerCase();
+          if (ans === 'q') break;
+          if (ans === 'a') {
+            approveAll = true;
+          } else if (ans === 'n') {
+            continue; // skip this one
+          } // default yes on 'y' or empty
+        } catch (e) {
+          // if prompt fails, fall back to continue non-interactive
+        }
+      }
       try {
         const { keep: keepTx, drop } = chooseKeepAndDrop(
           m.out,
@@ -476,6 +573,7 @@ module.exports = {
   __internals: {
     withinWindow,
     formatYMD,
+    parseYMDStrict,
     chooseKeepAndDrop,
     buildMergedNotes,
     sameDay,

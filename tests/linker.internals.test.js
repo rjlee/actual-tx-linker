@@ -25,4 +25,14 @@ describe('internals', () => {
     expect(keep).toBe(inTx);
     expect(drop).toBe(outTx);
   });
+
+  test('parseYMDStrict accepts valid YYYY-MM-DD only', () => {
+    const d = __internals.parseYMDStrict('2025-11-30');
+    expect(__internals.formatYMD(d)).toBe('2025-11-30');
+  });
+
+  test('parseYMDStrict rejects ISO timestamps and invalid dates', () => {
+    expect(() => __internals.parseYMDStrict('2025-11-30T12:00:00Z')).toThrow();
+    expect(() => __internals.parseYMDStrict('2025-02-30')).toThrow();
+  });
 });

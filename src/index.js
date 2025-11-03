@@ -30,6 +30,9 @@ async function runOnce(argv) {
       minScore,
       dryRun,
       deleteDuplicate,
+      startDate: argv.startDate,
+      endDate: argv.endDate,
+      interactive: argv.interactive,
       clearedOnly: argv.clearedOnly,
       keep: argv.keep,
       skipReconciled: argv.skipReconciled,
@@ -107,6 +110,8 @@ async function runDaemon(argv) {
       minScore: argv.minScore,
       dryRun: argv.dryRun,
       deleteDuplicate: argv.deleteDuplicate,
+      startDate: argv.startDate,
+      endDate: argv.endDate,
       clearedOnly: argv.clearedOnly,
       keep: argv.keep,
       skipReconciled: argv.skipReconciled,
@@ -172,6 +177,16 @@ async function main() {
       default: cfg.WINDOW_HOURS,
       describe: 'Max hours between matched transactions',
     })
+    .option('start-date', {
+      type: 'string',
+      describe:
+        'Start date (YYYY-MM-DD only). If set, overrides lookback-days together with --end-date.',
+    })
+    .option('end-date', {
+      type: 'string',
+      describe:
+        'End date (YYYY-MM-DD only). If set, overrides lookback-days together with --start-date. Defaults to today when only start-date is set.',
+    })
     .option('min-score', {
       type: 'number',
       default: cfg.MIN_SCORE,
@@ -236,6 +251,12 @@ async function main() {
       describe:
         'Merge a short note from the matched counterpart into the kept transaction',
     })
+    .option('interactive', {
+      alias: 'i',
+      type: 'boolean',
+      default: false,
+      describe: 'Prompt before linking each candidate and show details',
+    })
     .option('dry-run', {
       type: 'boolean',
       default:
@@ -250,6 +271,20 @@ async function main() {
       type: 'boolean',
       default: false,
       describe: 'Enable verbose logging',
+    })
+    .check((args) => {
+      const rx = /^\d{4}-\d{2}-\d{2}$/;
+      if (args.startDate && !rx.test(args.startDate)) {
+        throw new Error(
+          `Invalid --start-date format '${args.startDate}'. Expected YYYY-MM-DD (no time).`,
+        );
+      }
+      if (args.endDate && !rx.test(args.endDate)) {
+        throw new Error(
+          `Invalid --end-date format '${args.endDate}'. Expected YYYY-MM-DD (no time).`,
+        );
+      }
+      return true;
     })
     .help().argv;
 

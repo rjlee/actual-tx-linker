@@ -39,6 +39,8 @@ Provide env vars (via shell or `.env` file at project root):
 CLI
 
 - One-off linking (dry-run by default): `node src/index.js --mode link-once`
+  - Interactive confirm per link: add `--interactive` (or `-i`).
+  - Exact date range: add `--start-date YYYY-MM-DD --end-date YYYY-MM-DD`.
 - Daemon every N minutes: `node src/index.js --mode daemon --interval-mins 5`
   - Stop the daemon with Ctrl+C; it shuts down gracefully and closes the budget.
 - Repair broken/self-transfers: `node src/index.js --mode repair`
@@ -64,6 +66,7 @@ Common flags
 - `--lookback-days` (default 14): how far back to scan
 - `--window-hours` (default 72): max time difference between paired txns
 - `--min-score` (default 0.2): minimum text-similarity score to accept
+- `--start-date` / `--end-date` (YYYY-MM-DD only): optional explicit date range. If both are provided, overrides `--lookback-days`. If only `--start-date` is provided, `--end-date` defaults to today. If only `--end-date` is provided, start is computed by subtracting `--lookback-days` from end. Timestamps (ISO) are not accepted.
 - `--dry-run` (boolean, default true): print actions without changing data
   - You can also control this via `DRY_RUN` env; CLI flag overrides the env default.
 - `--include-accounts` (array): only scan accounts listed (name or id), can be repeated or comma-separated
@@ -77,10 +80,18 @@ Common flags
 - `--max-links-per-run` (number, default 50): cap changes per run for safety
 - `--pair-multiples` (boolean, default true): when multiple same-day, same-amount candidates exist on both sides, pair deterministically by id instead of skipping as ambiguous
 - `--verbose` (boolean): more logs
+- `--interactive` (boolean): prompt per suggested link, showing details of both transactions before applying. Combine with `--dry-run=false` to actually link.
 
 Env vs CLI precedence
 
 - All of the above env vars act as defaults. Any CLI flag explicitly provided overrides the corresponding env var for that run.
+
+Examples: November 2025 for selected accounts
+
+- Preview interactively for four accounts:
+  `node src/index.js --mode link-once -i --start-date 2025-11-01 --end-date 2025-11-30 --include-accounts "Monzo - Joint Account,Monzo - Deb,Starling - Deb,Starling - Rob"`
+- Apply interactively:
+  `node src/index.js --mode link-once -i --dry-run=false --start-date 2025-11-01 --end-date 2025-11-30 --include-accounts "Monzo - Joint Account,Monzo - Deb,Starling - Deb,Starling - Rob"`
 
 Repair specifics
 
