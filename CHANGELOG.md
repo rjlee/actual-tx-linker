@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/rjlee/actual-tx-linker/compare/v1.7.1...v1.7.2) (2025-11-04)
+
+
+### Bug Fixes
+
+* adopt reusable workflows; gate release on CI; nightly Docker build (amd64); upgrade Dockerfile to Node 22 with native deps; fix YAML ([16cb46a](https://github.com/rjlee/actual-tx-linker/commit/16cb46aa08f1b44b808527c5ca18e4263a75ed8b))
+
 ## [1.7.1](https://github.com/rjlee/actual-tx-linker/compare/v1.7.0...v1.7.1) (2025-11-03)
 
 
