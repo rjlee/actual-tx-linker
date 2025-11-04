@@ -1,3 +1,10 @@
+## [1.7.3](https://github.com/rjlee/actual-tx-linker/compare/v1.7.2...v1.7.3) (2025-11-04)
+
+
+### Bug Fixes
+
+* Fix invalid workflow error ([9b6ff88](https://github.com/rjlee/actual-tx-linker/commit/9b6ff88d335593894e6897a5a2d42b57af29d122))
+
 ## [1.7.2](https://github.com/rjlee/actual-tx-linker/compare/v1.7.1...v1.7.2) (2025-11-04)
 
 
