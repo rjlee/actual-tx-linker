@@ -17,6 +17,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
+  "engines": {
+    "node": ">=22"
+  },
   "dependencies": {
     "@actual-app/api": "^25.0.0",
     "dotenv": "^16.4.5",
