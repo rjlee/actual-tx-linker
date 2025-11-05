@@ -1,3 +1,10 @@
+## [1.7.6](https://github.com/rjlee/actual-tx-linker/compare/v1.7.5...v1.7.6) (2025-11-05)
+
+
+### Bug Fixes
+
+* Updating workflow ([3194057](https://github.com/rjlee/actual-tx-linker/commit/31940579431bd9be80c9b553effb7751f2bd466a))
+
 ## [1.7.5](https://github.com/rjlee/actual-tx-linker/compare/v1.7.4...v1.7.5) (2025-11-05)
 
 
