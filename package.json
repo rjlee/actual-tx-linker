@@ -11,7 +11,9 @@
     "start": "node ./src/index.js",
     "link-once": "node ./src/index.js --mode link-once",
     "daemon": "node ./src/index.js --mode daemon",
-    "test": "LOG_LEVEL=silent jest --passWithNoTests",
+    "test": "jest --passWithNoTests",
+    "test:coverage": "JEST_COVERAGE=true npm test",
+    "test:watch": "jest --watch",
     "prepare": "husky install || true",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -24,7 +26,8 @@
     "@actual-app/api": "^25.0.0",
     "dotenv": "^16.4.5",
     "node-cron": "^3.0.0",
-    "yargs": "^17.7.2"
+    "yargs": "^17.7.2",
+    "pino": "^8.0.0"
   },
   "devDependencies": {
     "eslint": "^8.57.0",

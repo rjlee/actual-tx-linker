@@ -11,12 +11,26 @@ jest.mock('@actual-app/api', () => ({
   deleteTransaction: jest.fn(),
 }));
 
+jest.mock('../src/logger', () => ({
+  info: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+}));
+
 const api = require('@actual-app/api');
+const logger = require('../src/logger');
 const { repairOnce } = require('../src/repair');
 
 describe('repairOnce', () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    api.sync.mockResolvedValue();
+    api.getAccounts.mockResolvedValue([]);
+    api.getPayees.mockResolvedValue([]);
+    api.getTransactions.mockResolvedValue([]);
+    api.createPayee.mockResolvedValue({});
+    api.updateTransaction.mockResolvedValue();
+    api.deleteTransaction.mockResolvedValue();
   });
 
   test('repairs a self-transfer by pointing to the opposite account and deleting duplicate', async () => {
@@ -159,5 +173,168 @@ describe('repairOnce', () => {
     expect(api.updateTransaction).toHaveBeenCalledWith('t1', {
       category: null,
     });
+  });
+
+  test('reuses existing transfer payee and warns when delete keeps failing', async () => {
+    api.getAccounts.mockResolvedValue([
+      { id: 'A', name: 'Acct A' },
+      { id: 'B', name: 'Acct B' },
+    ]);
+    api.getPayees.mockResolvedValue([
+      { id: 'pA', name: '', transfer_acct: 'A' },
+      { id: 'pB', name: '', transfer_acct: 'B' },
+    ]);
+    api.getTransactions.mockImplementation((acctId) => {
+      if (acctId === 'A') {
+        return Promise.resolve([
+          {
+            id: 'out-1',
+            account: 'A',
+            amount: -2500,
+            date: '2025-10-10',
+            description: 'Transfer to savings',
+            cleared: true,
+            reconciled: false,
+            payee: 'pA',
+            category: 'cat-x',
+          },
+        ]);
+      }
+      if (acctId === 'B') {
+        return Promise.resolve([
+          {
+            id: 'in-1',
+            account: 'B',
+            amount: 2500,
+            date: '2025-10-10',
+            description: 'Transfer to savings',
+            cleared: true,
+            reconciled: false,
+          },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
+    const deleteErr = new Error('no delete');
+    api.deleteTransaction.mockRejectedValueOnce(deleteErr);
+    api.deleteTransaction.mockRejectedValueOnce(deleteErr);
+
+    const repaired = await repairOnce({
+      minScore: 0,
+      clearedOnly: true,
+      dryRun: false,
+    });
+    expect(repaired).toBe(1);
+    expect(api.createPayee).not.toHaveBeenCalled();
+    expect(api.deleteTransaction).toHaveBeenCalledTimes(2);
+    expect(api.updateTransaction).toHaveBeenCalledWith('out-1', {
+      payee: 'pB',
+      category: null,
+    });
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Repair: delete failed for drop txn',
+      'no delete',
+    );
+  });
+
+  test('aligns transfer payee when linked counterpart exists', async () => {
+    api.getAccounts.mockResolvedValue([
+      { id: 'A', name: 'Acct A' },
+      { id: 'B', name: 'Acct B' },
+    ]);
+    api.getPayees.mockResolvedValue([
+      { id: 'pA', name: 'Transfer A', transfer_acct: 'A' },
+      { id: 'pUnknown', name: 'Unknown', transfer_acct: null },
+      { id: 'pB', name: 'Transfer B', transfer_acct: 'B' },
+    ]);
+    api.getTransactions.mockImplementation((acctId) => {
+      if (acctId === 'A') {
+        return Promise.resolve([
+          {
+            id: 'tx-out',
+            account: 'A',
+            amount: -1000,
+            date: '2025-01-02',
+            transfer_id: 'tx-in',
+            payee: 'pUnknown',
+            category: 'cat-transfer',
+            cleared: true,
+            reconciled: false,
+          },
+        ]);
+      }
+      if (acctId === 'B') {
+        return Promise.resolve([
+          {
+            id: 'tx-in',
+            account: 'B',
+            amount: 1000,
+            date: '2025-01-02',
+            transfer_id: 'tx-out',
+            payee: null,
+            category: 'cat-transfer',
+            cleared: true,
+            reconciled: false,
+          },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
+
+    const repaired = await repairOnce({ dryRun: false });
+    expect(repaired).toBe(2);
+    expect(api.createPayee).not.toHaveBeenCalled();
+    expect(api.updateTransaction).toHaveBeenNthCalledWith(1, 'tx-out', {
+      payee: 'pB',
+      category: null,
+    });
+    expect(api.updateTransaction).toHaveBeenNthCalledWith(2, 'tx-in', {
+      payee: 'pA',
+      category: null,
+    });
+  });
+
+  test('relinks orphaned transfer when counterpart missing', async () => {
+    api.getAccounts.mockResolvedValue([
+      { id: 'A', name: 'Acct A' },
+      { id: 'B', name: 'Acct B' },
+    ]);
+    api.getPayees.mockResolvedValue([
+      { id: 'pB', name: '', transfer_acct: 'B' },
+    ]);
+    api.getTransactions.mockImplementation((acctId) => {
+      if (acctId === 'A') {
+        return Promise.resolve([
+          {
+            id: 'orphan',
+            account: 'A',
+            amount: -1234,
+            date: '2025-03-15',
+            transfer_id: 'missing',
+            payee: 'pB',
+            category: 'cat-transfer',
+          },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
+
+    const repaired = await repairOnce({ dryRun: false });
+    expect(repaired).toBe(1);
+    expect(api.updateTransaction).toHaveBeenCalledWith('orphan', {
+      payee: 'pB',
+      category: null,
+    });
+    expect(api.deleteTransaction).not.toHaveBeenCalled();
+  });
+
+  test('logs sync failure but still resolves repair count', async () => {
+    api.sync.mockRejectedValueOnce(new Error('sync failed'));
+    const repaired = await repairOnce({ dryRun: false });
+    expect(repaired).toBe(0);
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Repair: sync failed',
+      'sync failed',
+    );
   });
 });
