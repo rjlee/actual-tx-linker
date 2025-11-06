@@ -1,3 +1,10 @@
+## [1.7.8](https://github.com/rjlee/actual-tx-linker/compare/v1.7.7...v1.7.8) (2025-11-06)
+
+
+### Bug Fixes
+
+* improved signal handling and structured logging ([a07159a](https://github.com/rjlee/actual-tx-linker/commit/a07159a2a7680655731416b70436495d47af074b))
+
 ## [1.7.7](https://github.com/rjlee/actual-tx-linker/compare/v1.7.6...v1.7.7) (2025-11-06)
 
 
