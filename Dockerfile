@@ -1,30 +1,41 @@
-FROM node:22-slim AS base
+FROM node:22-slim AS builder
 WORKDIR /app
 
-# Accept Actual API version and metadata as build args
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 make g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV HUSKY=0
+ENV PYTHON=/usr/bin/python3
+ENV npm_config_python=/usr/bin/python3
+
 ARG ACTUAL_API_VERSION
 ARG GIT_SHA
 ARG APP_VERSION
 
-# Install native build deps and production dependencies; allow overriding @actual-app/api when provided
 COPY package*.json ./
-ENV HUSKY=0
-RUN set -eux; \
-    apt-get update && apt-get install -y --no-install-recommends python3 make g++ && rm -rf /var/lib/apt/lists/*; \
+RUN npm pkg delete scripts.prepare || true && \
     if [ -n "$ACTUAL_API_VERSION" ]; then \
       npm pkg set dependencies.@actual-app/api=$ACTUAL_API_VERSION && \
       npm install --package-lock-only --no-audit --no-fund; \
-    fi; \
+    fi && \
     npm ci --omit=dev --no-audit --no-fund
 
-# Copy src
-COPY src ./src
+COPY . .
 
-ENV NODE_ENV=production
+FROM node:22-slim AS runner
+WORKDIR /app
 
-# Useful metadata labels
+COPY --from=builder /app /app
+
+ARG ACTUAL_API_VERSION
+ARG GIT_SHA
+ARG APP_VERSION
 LABEL org.opencontainers.image.revision="$GIT_SHA" \
       org.opencontainers.image.version="$APP_VERSION" \
       io.actual.api.version="$ACTUAL_API_VERSION"
 
+ENV NODE_ENV=production
+
 ENTRYPOINT ["node", "src/index.js"]
+CMD ["--mode", "daemon"]
