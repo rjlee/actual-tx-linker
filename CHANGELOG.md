@@ -1,3 +1,10 @@
+## [1.7.7](https://github.com/rjlee/actual-tx-linker/compare/v1.7.6...v1.7.7) (2025-11-06)
+
+
+### Bug Fixes
+
+* Added tests and standardised jest configuration ([4cf23cf](https://github.com/rjlee/actual-tx-linker/commit/4cf23cf82af10c0d172e38e39f09034522db6ef6))
+
 ## [1.7.6](https://github.com/rjlee/actual-tx-linker/compare/v1.7.5...v1.7.6) (2025-11-05)
 
 
