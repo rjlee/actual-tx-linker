@@ -470,7 +470,6 @@ async function linkOnce({
           process.stdout.write(left + '\n');
           process.stdout.write('Incoming transaction:\n');
           process.stdout.write(right + '\n');
-          // eslint-disable-next-line no-await-in-loop
           const ans = (
             await prompt('Link this pair? [Y]es/[n]o/[a]ll/[q]uit: ')
           ).toLowerCase();
@@ -480,8 +479,8 @@ async function linkOnce({
           } else if (ans === 'n') {
             continue; // skip this one
           } // default yes on 'y' or empty
-        } catch (e) {
-          // if prompt fails, fall back to continue non-interactive
+        } catch (err) {
+          logger.warn('Interactive prompt failed:', err?.message || err);
         }
       }
       try {

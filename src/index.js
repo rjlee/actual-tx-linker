@@ -125,8 +125,8 @@ async function runDaemon(argv) {
     logger.info(`Received ${sig}, stopping daemon gracefully...`);
     try {
       controller.abort();
-    } catch (e) {
-      /* ignore */ void 0;
+    } catch {
+      /* ignore */
     }
   };
   const sigintHandler = () => onStop('SIGINT');
@@ -190,7 +190,6 @@ async function runDaemon(argv) {
       }
     } else {
       // Keep process alive while cron timers run
-      // eslint-disable-next-line no-constant-condition
       while (!stopping) {
         await sleepAbortable(60 * 1000, controller.signal);
       }
@@ -344,7 +343,6 @@ async function main() {
 
 if (require.main === module) {
   main().catch((err) => {
-    // eslint-disable-next-line no-console
     console.error(err);
     process.exit(1);
   });
@@ -447,8 +445,8 @@ function startEventsListener({ eventsUrl, authToken, verbose }) {
           }
           triggerDebounced({ delayMs: 1500 });
         }
-      } catch (e) {
-        /* ignore */ void 0;
+      } catch {
+        /* ignore */
       }
     };
 

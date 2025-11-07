@@ -266,13 +266,17 @@ async function repairOnce({
           try {
             await api.deleteTransaction(drop.id);
           } catch (err) {
+            logger.warn(
+              'Repair: first delete attempt failed, retrying',
+              err?.message || err,
+            );
             // retry once
             try {
               await api.deleteTransaction(drop.id);
-            } catch (e) {
+            } catch (secondErr) {
               logger.warn(
                 'Repair: delete failed for drop txn',
-                e?.message || e,
+                secondErr?.message || secondErr,
               );
             }
           }

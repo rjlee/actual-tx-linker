@@ -79,16 +79,16 @@ function sleepAbortable(ms, signal) {
     const cleanup = () => {
       try {
         signal.removeEventListener('abort', onAbort);
-      } catch (e) {
-        /* ignore */ void 0;
+      } catch {
+        /* ignore */
       }
     };
     try {
       signal.addEventListener('abort', onAbort, { once: true });
       if (signal.aborted) onAbort();
-    } catch (e) {
+    } catch {
       // Fallback if AbortController not supported
-      /* ignore */ void 0;
+      /* ignore */
     }
   });
 }
