@@ -1,3 +1,38 @@
+# 1.0.0 (2025-11-07)
+
+
+### Bug Fixes
+
+* Add clarification to logging details in README.md ([4e8997c](https://github.com/rjlee/actual-tx-linker/commit/4e8997c6938a2d528b8434b5694f3b3c55fe48e5))
+* Added tests and standardised jest configuration ([4cf23cf](https://github.com/rjlee/actual-tx-linker/commit/4cf23cf82af10c0d172e38e39f09034522db6ef6))
+* adopt new workflows ([a697d50](https://github.com/rjlee/actual-tx-linker/commit/a697d50f6e5d59f302e9e8f82a0906d77861e9d2))
+* adopt reusable workflows; gate release on CI; nightly Docker build (amd64); upgrade Dockerfile to Node 22 with native deps; fix YAML ([16cb46a](https://github.com/rjlee/actual-tx-linker/commit/16cb46aa08f1b44b808527c5ca18e4263a75ed8b))
+* amend cron schedule ([eafa24e](https://github.com/rjlee/actual-tx-linker/commit/eafa24e98b80b1a446041a7551d624ea02678d0a))
+* Correct Docker image references in workflows and docker-compose.yml ([7061fad](https://github.com/rjlee/actual-tx-linker/commit/7061fad2bbb115ead68134a4579d36791ef1373a))
+* Correct transfer payee ID assignment to target the appropriate account in linkOnce function ([4445df9](https://github.com/rjlee/actual-tx-linker/commit/4445df95417052ff98c2051a5133e69303f3df9e))
+* Fix invalid workflow error ([9b6ff88](https://github.com/rjlee/actual-tx-linker/commit/9b6ff88d335593894e6897a5a2d42b57af29d122))
+* Improve formatting and readability in event listener and debounce functions ([4cba154](https://github.com/rjlee/actual-tx-linker/commit/4cba154abc36a3c3396528a46e898ef567d52bca))
+* improved signal handling and structured logging ([a07159a](https://github.com/rjlee/actual-tx-linker/commit/a07159a2a7680655731416b70436495d47af074b))
+* **lint:** clean unused catch params ([9bc4209](https://github.com/rjlee/actual-tx-linker/commit/9bc42096f4dc8f37595089f812ba1dc216a0d602))
+* reduce test threshold ([1701f89](https://github.com/rjlee/actual-tx-linker/commit/1701f8943ae205e09a1b14f6f6ee5ccfbad9a873))
+* Remove redundant newline in README.md for improved formatting ([ac14953](https://github.com/rjlee/actual-tx-linker/commit/ac14953e83223a2e9814de2b7fbaf9f5064cd74a))
+* removing temp script ([77ac619](https://github.com/rjlee/actual-tx-linker/commit/77ac619e2e7b9fb031fd986a2788c5c11bd70e69))
+* support actual api version specification in docker compose file ([ab30f1a](https://github.com/rjlee/actual-tx-linker/commit/ab30f1a8aa038ed82c2e1ba04dd55f21c7aef201))
+* Update .prettierignore to include CHANGELOG.md and format adjustments in docker-compose.yml ([cc9c085](https://github.com/rjlee/actual-tx-linker/commit/cc9c0856381ea693416f38a41a6605e93198290d))
+* Updates to reflect new workflow ([06f5f6d](https://github.com/rjlee/actual-tx-linker/commit/06f5f6de4915785b0308b937def4f09d7cb2368d))
+* Updating workflow ([3194057](https://github.com/rjlee/actual-tx-linker/commit/31940579431bd9be80c9b553effb7751f2bd466a))
+
+
+### Features
+
+* Add 'pair-multiples' option to link transactions deterministically and implement corresponding tests ([92634be](https://github.com/rjlee/actual-tx-linker/commit/92634befd26ed2b09688f8a3b177ddd9c9ac14f9))
+* Add DRY_RUN environment variable support for controlling dry-run behavior ([2b1044c](https://github.com/rjlee/actual-tx-linker/commit/2b1044c72a9d345f9b9dfd7141d1515865059903))
+* Add event-based triggers for near-real-time linking with actual-events ([196a938](https://github.com/rjlee/actual-tx-linker/commit/196a9387fa894e30d97c8c409787ca6aaaa4c011))
+* Add initial docker-compose.yml for service configuration ([0294328](https://github.com/rjlee/actual-tx-linker/commit/02943283ccac9efeb33c7532e06f22423705bb07))
+* Add new environment variables and CLI options for transaction linking behavior ([6c43609](https://github.com/rjlee/actual-tx-linker/commit/6c43609bc1e30bcb4b6d891a54058b90a5c1e6bd))
+* Add repair mode to fix self-transfers and clear categories in transactions ([e88bac5](https://github.com/rjlee/actual-tx-linker/commit/e88bac5d30de88569457495d84d5d5998e47b6ce))
+* added interactive cli mode ([bad6423](https://github.com/rjlee/actual-tx-linker/commit/bad64239b4c241b53304124fc3ba3d1c18654724))
+
 ## [1.7.8](https://github.com/rjlee/actual-tx-linker/compare/v1.7.7...v1.7.8) (2025-11-06)
 
 
