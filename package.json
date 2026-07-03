@@ -23,7 +23,7 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@actual-app/api": "^26.6.0",
+    "@actual-app/api": "^26.7.0",
     "dotenv": "^17.4.2",
     "node-cron": "^4.5.0",
     "pino": "^10.3.1",
